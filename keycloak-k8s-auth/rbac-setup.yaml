@@ -1,0 +1,46 @@
+# Service Account for the Next.js app
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: nextjs-k8s-viewer
+  namespace: default
+
+---
+# ClusterRole with permissions to read pods
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: pod-reader
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list"]
+- apiGroups: [""]
+  resources: ["namespaces"]
+  verbs: ["get", "list"]
+
+---
+# ClusterRoleBinding to bind the service account to the role
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: nextjs-pod-reader
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: pod-reader
+subjects:
+- kind: ServiceAccount
+  name: nextjs-k8s-viewer
+  namespace: default
+
+---
+# Secret to get the service account token (for Kubernetes < 1.24)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: nextjs-k8s-viewer-token
+  namespace: default
+  annotations:
+    kubernetes.io/service-account.name: nextjs-k8s-viewer
+type: kubernetes.io/service-account-token

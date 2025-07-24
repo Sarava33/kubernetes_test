@@ -12,9 +12,14 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (session) {
+    if (session && session.accessToken) {
+        console.log("Access Token:", session.accessToken);
       setLoading(true);
-      fetch("/api/k8s-pods")
+      fetch("/api/k8s-pods", {
+        headers: {
+            Authorization: `Bearer ${session.accessToken}`, // ✅ Send JWT token
+        },
+        })
         .then((res) => res.json())
         .then((data) => {
           console.log("Received data from API:", data);
